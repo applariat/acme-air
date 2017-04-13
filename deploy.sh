@@ -8,7 +8,7 @@ APL_STACK_ID=${APL_STACK_ID:?Missing required env var}
 APL_RElEASE_ID=${APL_RElEASE_ID:?Missing required env var}
 APL_STACK_COMPONENT_ID=${APL_STACK_COMPONENT_ID:?Missing required env var}
 APL_ARTIFACT_NAME=${APL_ARTIFACT_NAME:?Missing required env var}
-APL_CMD_RELEASE=${APL_CMD_RELEASE:v0.1.0}
+APL_CMD_RELEASE=${APL_CMD_RELEASE:-v0.1.0}
 
 set +e
 
