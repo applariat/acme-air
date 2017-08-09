@@ -151,7 +151,7 @@ fi
 echo
 echo "Submitting the new artifact"
 SA_CREATE=$(./apl stack-artifacts create --stack-id $APL_STACK_ID --loc-artifact-id \
-            ${APL_LOC_ARTIFACT_ID} --artifact_name ${REPO_PATH}/${CODE_LOC}.zip --stack-artifact-type \
+            ${APL_LOC_ARTIFACT_ID} --artifact-name ${REPO_PATH}/${CODE_LOC}.zip --stack-artifact-type \
             ${APL_ARTIFACT_TYPE} --name ${APL_ARTIFACT_NAME} -o json)
 
 if [[ $(echo $SA_CREATE | ./jq -r '. | has("message")') == "true"  ]]; then
