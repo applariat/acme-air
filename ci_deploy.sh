@@ -18,13 +18,13 @@ APL_CLI_VER=${APL_CLI_VER:-v0.2.0}
 
 #Project variables
 CREATE_RELEASE=${CREATE_RELEASE:-false}
-REPO_NAME=${REPO_NAME:-"acme-air"} 
-REPO_PATH={$REPO_PATH:-"https://github.com/applariat/${REPO_NAME}/archive"}
+REPO_NAME=${REPO_NAME:-acme-air} 
+REPO_PATH="https://github.com/applariat/${REPO_NAME}/archive"
 
 #APL Platform variables
 #Required as env variable inputs from CI
 APL_LOC_DEPLOY_NAME=${APL_LOC_DEPLOY_NAME}
-APL_LOC_ARTIFACT_NAME=${APL_LOC_ARTIFACT_NAME:-"simple-url"}
+APL_LOC_ARTIFACT_NAME=${APL_LOC_ARTIFACT_NAME:-simple-url}
 WORKLOAD_TYPE=${WORKLOAD_TYPE:-level2}
 
 #APL STACK variables
