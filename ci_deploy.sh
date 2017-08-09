@@ -23,8 +23,8 @@ REPO_PATH={$REPO_PATH:-"https://github.com/applariat/${REPO_NAME}/archive"}
 
 #APL Platform variables
 #Required as env variable inputs from CI
-APL_LOC_DEPLOY_NAME=${APL_LOC_DEPLOY_NAME:?Missing required env var}
-APL_LOC_ARTIFACT_NAME=${APL_LOC_ARTIFACT_NAME:?Missing required env var}
+APL_LOC_DEPLOY_NAME=${APL_LOC_DEPLOY_NAME}
+APL_LOC_ARTIFACT_NAME=${APL_LOC_ARTIFACT_NAME:-"simple-url"}
 WORKLOAD_TYPE=${WORKLOAD_TYPE:-level2}
 
 #APL STACK variables
@@ -106,7 +106,7 @@ DEPLOYMENT_NAME=${APL_ARTIFACT_NAME}
 
 #Lookup APL PLATFORM ids
 if [ -z $APL_LOC_DEPLOY_ID ]; then
-  APL_LOC_DEPLOY_ID=$(./apl loc-deploys --name $APL_LOC_DEPLOY_NAME -o json | ./jq -r '.[0].id')
+  APL_LOC_DEPLOY_ID=$(./apl loc-deploys -o json | ./jq -r '.[0].id')
 fi
 if [ -z $APL_LOC_ARTIFACT_ID ]; then
   APL_LOC_ARTIFACT_ID=$(./apl loc-artifacts --name $APL_LOC_ARTIFACT_NAME -o json | ./jq -r '.[0].id')
