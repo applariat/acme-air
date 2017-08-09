@@ -4,5 +4,5 @@ script:
 env:
   global:
   - APL_STACK_NAME: "Acme Air Travel Application"
-  - APL_RELEASE_VERSION: 1
+  - APL_RELEASE_VERSION: "1"
   - APL_COMPONENT_NAME: "node"
