@@ -33,6 +33,11 @@ APL_STACK_NAME=${APL_STACK_NAME:?Missing required env var} #The machine name of 
 APL_RELEASE_VERSION=${APL_RELEASE_VERSION:?Missing required env var} #The integer version of the release
 APL_COMPONENT_NAME=${APL_COMPONENT_NAME:?Missing required env var} #The name given for the component to be updated in appLariat
 
+echo "Using Variables:
+Stack Name: ${APL_STACK_NAME}
+Version: ${APL_RELEASE_VERSION}
+Component: ${APL_COMPONENT_NAME}"
+
 
 set +e
 
