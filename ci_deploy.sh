@@ -85,7 +85,7 @@ DEPLOYMENT_NAME=${APL_ARTIFACT_NAME}
   #  APL_FILE=apl-${APL_CLI_VERSION}-darwin_amd64.tgz
   #fi
   echo
-  echo "Downloading cli: ${DOWNLOAD_URL}
+  echo "Downloading cli: ${DOWNLOAD_URL}"
   wget -q ${DOWNLOAD_URL}
   tar zxf ${APL_FILE}
   echo "Running APL Version - $(./apl version)"
