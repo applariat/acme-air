@@ -88,6 +88,7 @@ DEPLOYMENT_NAME=${APL_ARTIFACT_NAME}
   echo "Downloading cli: ${DOWNLOAD_URL}"
   wget -q ${DOWNLOAD_URL}
   tar zxf ${APL_FILE}
+  mv bin/apl .
   echo "Running APL Version - $(./apl version)"
 #fi
 #Confirm jq is available
