@@ -80,14 +80,15 @@ DEPLOYMENT_NAME=${APL_ARTIFACT_NAME}
 #Check the environment
 #Install apl command
 #if ! [ `command -v apl` ]; then
-  APL_FILE=apl-${APL_CLI_VER}-linux_amd64.tgz
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    APL_FILE=apl-${APL_CLI_VER}-darwin_amd64.tgz
-  fi
+  #APL_FILE=apl-${APL_CLI_VERSION}-linux_amd64.tgz
+  #if [[ "$OSTYPE" == "darwin"* ]]; then
+  #  APL_FILE=apl-${APL_CLI_VERSION}-darwin_amd64.tgz
+  #fi
   echo
-  echo "Downloading cli: https://github.com/applariat/go-apl/releases/download/${APL_CLI_VER}/${APL_FILE}"
-  wget -q https://github.com/applariat/go-apl/releases/download/${APL_CLI_VER}/${APL_FILE}
+  echo "Downloading cli: ${DOWNLOAD_URL}
+  wget -q ${DOWNLOAD_URL}
   tar zxf ${APL_FILE}
+  echo "Running APL Version - $(./apl version)"
 #fi
 #Confirm jq is available
 #if ! [ `command -v jq` ]; then
