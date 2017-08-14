@@ -15,7 +15,7 @@ JOB_COMMIT=${TRAVIS_COMMIT}
 
 #appLariat CLI Version to download
 FIND_LATEST="https://api.github.com/repos/applariat/go-apl/releases/latest"
-DOWNLOAD_URL=$(curl -s ${FIND_LATEST} | grep browser_download_url | grep ${OS_TYPE} | head -n 1 | cut -d '"' -f 4)
+DOWNLOAD_URL=$(wget -qO- ${FIND_LATEST} | grep browser_download_url | grep ${OS_TYPE} | head -n 1 | cut -d '"' -f 4)
 APL_CLI_VERSION=$(echo $DOWNLOAD_URL | awk -F"/" '{print $(NF - 1)}')
 APL_FILE=$(echo $DOWNLOAD_URL | awk -F"/" '{print $NF}')
 
