@@ -87,8 +87,9 @@ DEPLOYMENT_NAME=${APL_ARTIFACT_NAME}
   echo
   echo "Downloading cli: ${DOWNLOAD_URL}"
   wget -q ${DOWNLOAD_URL}
-  tar zxf ${APL_FILE}
+  tar zxf ${APL_FILE}  --exclude=apl_install.sh --exclude=scripts
   mv bin/apl .
+  #rm -rf bin ${APL_FILE}
   echo "Running APL Version - $(./apl version)"
 #fi
 #Confirm jq is available
@@ -159,7 +160,7 @@ if [ -z $APL_RELEASE_ID ]; then
     if [ -z ${APL_LOC_ARTIFACT_ID} ]; then
         CUR_STACK_ARTIFACT_ID=$(echo ${APL_STACK_COMPONENT_REC} | \
           ./jq -r '.services[0].build.artifacts |  if has("code") then .code elif has("builder") then .builder else .image end')
-        SA_REC=$(./apl stack-artifacts get $sa_id -o json)
+        SA_REC=$(./apl stack-artifacts get $CUR_STACK_ARTIFACT_ID -o json)
         APL_LOC_ARTIFACT_ID=$(echo ${SA_REC} | ./jq -r '.loc_artifact_id')
     fi
 fi
@@ -299,6 +300,9 @@ else
     ./jq '.status | { name: .namespace, state: .state, description: .description, services: .components[].services[]}'
 fi
 COMMENT
+
+#Clean up
+rm -rf apl* jq deploy.yaml
 
 end=`date +%s`
 runtime=$((end-start))
