@@ -157,7 +157,7 @@ if [ -z $APL_RELEASE_ID ]; then
     #echo $APL_ARTIFACT_TYPE
     if [ -z ${APL_LOC_ARTIFACT_ID} ]; then
         CUR_STACK_ARTIFACT_ID=$(echo ${APL_STACK_COMPONENT_REC} | \
-          ./jq -r .services[0].build.artifacts |  if has("code") then .code elif has("builder") then .builder else .image end')
+          ./jq -r '.services[0].build.artifacts |  if has("code") then .code elif has("builder") then .builder else .image end')
         SA_REC=$(./apl stack-artifacts get $sa_id -o json)
         APL_LOC_ARTIFACT_ID=$(echo ${SA_REC} | ./jq -r '.loc_artifact_id')
     fi
