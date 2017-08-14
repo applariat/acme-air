@@ -14,7 +14,10 @@ JOB_TAG=${TRAVIS_TAG}
 JOB_COMMIT=${TRAVIS_COMMIT}
 
 #appLariat CLI Version to download
-APL_CLI_VER=${APL_CLI_VER:-v0.2.0}
+FIND_LATEST="https://api.github.com/repos/applariat/go-apl/releases/latest"
+DOWNLOAD_URL=$(curl -s ${FIND_LATEST} | grep browser_download_url | grep ${OS_TYPE} | head -n 1 | cut -d '"' -f 4)
+APL_CLI_VERSION=$(echo $DOWNLOAD_URL | awk -F"/" '{print $(NF - 1)}')
+APL_FILE=$(echo $DOWNLOAD_URL | awk -F"/" '{print $NF}')
 
 #Project variables
 CREATE_RELEASE=${CREATE_RELEASE:-false}
@@ -24,7 +27,7 @@ REPO_PATH="https://github.com/applariat/${REPO_NAME}/archive"
 #APL Platform variables
 #Required as env variable inputs from CI
 APL_LOC_DEPLOY_NAME=${APL_LOC_DEPLOY_NAME}
-APL_LOC_ARTIFACT_NAME=${APL_LOC_ARTIFACT_NAME:-simple-url}
+APL_LOC_ARTIFACT_NAME=${APL_LOC_ARTIFACT_NAME}
 WORKLOAD_TYPE=${WORKLOAD_TYPE:-level2}
 
 #APL STACK variables
@@ -32,12 +35,6 @@ WORKLOAD_TYPE=${WORKLOAD_TYPE:-level2}
 APL_STACK_NAME=${APL_STACK_NAME:?Missing required env var} #The machine name of the stack - all lower case, with no spaces
 APL_RELEASE_VERSION=${APL_RELEASE_VERSION:?Missing required env var} #The integer version of the release
 APL_COMPONENT_NAME=${APL_COMPONENT_NAME:?Missing required env var} #The name given for the component to be updated in appLariat
-
-echo "Using Variables:
-Stack Name: ${APL_STACK_NAME}
-Version: ${APL_RELEASE_VERSION}
-Component: ${APL_COMPONENT_NAME}"
-
 
 set +e
 
@@ -69,7 +66,7 @@ else
     WORKLOAD_TYPE=level2
 fi
 
-## Make the name domain safe.
+## Make sure the name is domain safe.
 APL_ARTIFACT_NAME=${APL_ARTIFACT_NAME//[^A-Za-z0-9\\-]/-}
 
 DEPLOYMENT_NAME=${APL_ARTIFACT_NAME}
@@ -113,11 +110,11 @@ DEPLOYMENT_NAME=${APL_ARTIFACT_NAME}
 if [ -z $APL_LOC_DEPLOY_ID ]; then
   APL_LOC_DEPLOY_ID=$(./apl loc-deploys -o json | ./jq -r '.[0].id')
 fi
-if [ -z $APL_LOC_ARTIFACT_ID ]; then
+if [ ! -z ${APL_LOC_ARTIFACT_NAME} ]; then
   APL_LOC_ARTIFACT_ID=$(./apl loc-artifacts --name $APL_LOC_ARTIFACT_NAME -o json | ./jq -r '.[0].id')
 fi
 
-#convert stack display name to machine name
+#Just in case make sure to convert stack display name to machine name
 APL_STACK_NAME=$(echo ${APL_STACK_NAME} | tr -d ' ' | tr '[:upper:]' '[:lower:]')
 #Lookup APL Stack info
 if [ -z $APL_STACK_ID ]; then
@@ -132,23 +129,31 @@ if [ -z $APL_RELEASE_ID ]; then
     RELEASE_REC=$(echo ${RELEASE_LIST} | \
       ./jq -c --argjson rv $APL_RELEASE_VERSION '.[] | select(.version == $rv) ')
     #echo $RELEASE_REC
-    APL_RELEASE_ID=$(echo ${RELEASE_LIST} | \
-      ./jq -r --argjson rv $APL_RELEASE_VERSION '.[] | select(.version == $rv) | .id')
+    APL_RELEASE_ID=$(echo ${RELEASE_REC} | \
+      ./jq -r '.id')
     #echo $APL_RELEASE_ID
-    APL_STACK_VERSION_ID=$(echo ${RELEASE_LIST} | \
-      ./jq -r --arg rid ${APL_RELEASE_ID} '.[] | select(.id == $rid) | .stack_version_id')
+    APL_STACK_VERSION_ID=$(echo ${RELEASE_REC} | \
+      ./jq -r '.stack_version_id')
     #echo $APL_STACK_VERSION_ID
-    APL_STACK_COMPONENT_ID=$(echo ${RELEASE_LIST} | \
-      ./jq -r --arg rid ${APL_RELEASE_ID} --arg cname $APL_COMPONENT_NAME '.[] | select(.id == $rid) | .components[] | select(.name == $cname) | .stack_component_id')
+    APL_STACK_COMPONENT_REC=$(echo ${RELEASE_REC} | \
+      ./jq -r --arg cname $APL_COMPONENT_NAME '.components[] | select(.name == $cname)')
+    APL_STACK_COMPONENT_ID=$(echo ${APL_STACK_COMPONENT_REC} | \
+      ./jq -r '.stack_component_id')
     #echo $APL_STACK_COMPONENT_ID
-    APL_COMP_SERVICE_NAME=$(echo ${RELEASE_LIST} | \
-      ./jq -r --arg rid ${APL_RELEASE_ID} --arg cname $APL_COMPONENT_NAME '.[] | select(.id == $rid) | .components[] | select(.name == $cname) | .services[0].name')
+    APL_COMP_SERVICE_NAME=$(echo ${APL_STACK_COMPONENT_REC} | \
+      ./jq -r '.services[0].name')
     #echo $APL_COMP_SERVICE_NAME
     #Get the artifact type for the component
-    APL_ARTIFACT_TYPE=$(echo ${RELEASE_LIST} | \
-      ./jq -rc --arg rid $APL_RELEASE_ID --arg cname $APL_COMPONENT_NAME '.[] | select(.id == $rid) | .components[] | select(.name == $cname) | .services[0].build.artifacts | keys | 
+    APL_ARTIFACT_TYPE=$(echo ${APL_STACK_COMPONENT_REC} | \
+      ./jq -r '.services[0].build.artifacts | keys |
       if contains(["code"]) then "code" elif contains(["builder"]) then "builder" else "image" end')
     #echo $APL_ARTIFACT_TYPE
+    if [ -z ${APL_LOC_ARTIFACT_ID} ]; then
+        CUR_STACK_ARTIFACT_ID=$(echo ${APL_STACK_COMPONENT_REC} | \
+          ./jq -r .services[0].build.artifacts |  if has("code") then .code elif has("builder") then .builder else .image end')
+        SA_REC=$(./apl stack-artifacts get $sa_id -o json)
+        APL_LOC_ARTIFACT_ID=$(echo ${SA_REC} | ./jq -r '.loc_artifact_id')
+    fi
 fi
    
 #Submit to appLariat
@@ -274,15 +279,15 @@ if [ -z $APL_DEPLOYMENT_ID ]; then
   exit
 else
   echo "Tracking Deployment Status"
-  state=$(apl deployments get $APL_DEPLOYMENT_ID -o json | ./jq -r '.status.state')
-  while [[ $(apl deployments get $APL_DEPLOYMENT_ID -o json | ./jq -r '.status.state') =~ ^(queued|deploying|pending)$ ]]; do
+  state=$(./apl deployments get $APL_DEPLOYMENT_ID -o json | ./jq -r '.status.state')
+  while [[ $(./apl deployments get $APL_DEPLOYMENT_ID -o json | ./jq -r '.status.state') =~ ^(queued|deploying|pending)$ ]]; do
       echo "Deployment Pending"
       sleep 30
   done
   echo "Deployment completed with the following info:"
   echo "Details:"
   echo
-  apl deployments get $APL_DEPLOYMENT_ID -o json | 
+  ./apl deployments get $APL_DEPLOYMENT_ID -o json | 
     ./jq '.status | { name: .namespace, state: .state, description: .description, services: .components[].services[]}'
 fi
 COMMENT
