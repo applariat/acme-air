@@ -6,3 +6,4 @@ env:
   - APL_STACK_NAME="acmetravel"
   - APL_RELEASE_VERSION=1
   - APL_COMPONENT_NAME="acmeair"
+  - DEPLOY_BRANCH=true
