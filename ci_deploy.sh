@@ -253,7 +253,15 @@ fi
 echo
 if [[ $CREATE_RELEASE == true ]]; then
     echo "Creating deployment for new release with id: $APL_RELEASE_ID"
-	DEPLOY_COMMAND="./apl deployments create --name $DEPLOYMENT_NAME --release-id $APL_RELEASE_ID --loc-deploy-id $APL_LOC_DEPLOY_ID -o json"
+    #DEPLOY_COMMAND="./apl deployments create --name $DEPLOYMENT_NAME --release-id $APL_RELEASE_ID --loc-deploy-id $APL_LOC_DEPLOY_ID -o json"
+    cat >deploy.yaml <<EOL
+name: ${DEPLOYMENT_NAME}
+release_id: ${APL_RELEASE_ID}
+loc_deploy_id: ${APL_LOC_DEPLOY_ID}
+workload_type: ${WORKLOAD_TYPE}
+EOL
+
+    DEPLOY_COMMAND="./apl deployments create -f deploy.yaml -o json" 
 else
   	echo "Creating deployment with overrides to release with id: $APL_RELEASE_ID"
 	#Create a yaml file for the deployment with overrides
