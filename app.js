@@ -191,5 +191,7 @@ function startServer() {
     serverStarted = true;
     server = app.listen(port);
     logger.info('Express server listening on port ' + port);
-    logger.info('Active Connections: ' + server.getConnections);
+    server.getConnections(function(error, count) {
+        logger.info('Active Connections: ' + count);
+    });
 }
