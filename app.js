@@ -134,13 +134,17 @@ if (authService && authService.initialize) {
 
 function checkStatus(req, res) {
     //res.sendStatus(200);
-    message = 'Active Connections: ' + server.getConnections
-    res.send(200, message)
+
+    server.getConnections(function(error, count) {
+        message = 'Active Connections: ' + count
+        res.send(200, message)
+    });
+
 }
 
 function login(req, res) {
     if (!initialized) {
-        logger.info("please wait for db connection initialized then trigger again.");
+        logger.info('please wait for db connection initialized then trigger again.');
         initDB();
         res.sendStatus(403);
     } else
@@ -149,7 +153,7 @@ function login(req, res) {
 
 function logout(req, res) {
     if (!initialized) {
-        logger.info("please wait for db connection initialized then trigger again.");
+        logger.info('please wait for db connection initialized then trigger again.');
         initDB();
         res.sendStatus(400);
     } else
@@ -159,7 +163,7 @@ function logout(req, res) {
 
 function startLoadDatabase(req, res) {
     if (!initialized) {
-        logger.info("please wait for db connection initialized then trigger again.");
+        logger.info('please wait for db connection initialized then trigger again.');
         initDB();
         res.sendStatus(400);
     } else
@@ -176,7 +180,7 @@ function initDB() {
         } else
             initialized = true;
 
-        logger.info("Initialized database connections");
+        logger.info('Initialized database connections');
         startServer();
     });
 }
@@ -186,6 +190,6 @@ function startServer() {
     if (serverStarted) return;
     serverStarted = true;
     server = app.listen(port);
-    logger.info("Express server listening on port " + port);
-    logger.info("Active Connections: " + server.getConnections);
+    logger.info('Express server listening on port ' + port);
+    logger.info('Active Connections: ' + server.getConnections);
 }
